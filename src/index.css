@@ -1,0 +1,999 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+/* ============================================================================
+   Design System - Clean Light Theme with Teal & Amber
+   ============================================================================ */
+
+:root {
+  /* Typography */
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  
+  /* Primary - Teal */
+  --color-primary: #0d9488;
+  --color-primary-dark: #0f766e;
+  --color-primary-light: #14b8a6;
+  
+  /* Accent - Amber */
+  --color-accent: #f59e0b;
+  --color-accent-light: #fbbf24;
+  
+  /* Status */
+  --color-danger: #dc2626;
+  --color-success: #059669;
+  --color-warning: #f59e0b;
+  
+  /* Neutrals - Rich Slate */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+  --shadow-glow: 0 0 20px rgb(13 148 136 / 0.15);
+  
+  /* Variant Colors - Teal & Amber theme */
+  --variant-0: #0d9488;
+  --variant-1: #f59e0b;
+  --variant-2: #06b6d4;
+  --variant-3: #059669;
+  --variant-4: #fbbf24;
+  --variant-5: #0f766e;
+  --variant-6: #14b8a6;
+  --variant-7: #d97706;
+
+  font-family: var(--font-body);
+  color: var(--color-slate-900);
+  background-color: var(--color-slate-50);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================================
+   Base Styles
+   ============================================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--color-slate-900);
+  background: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(13, 148, 136, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+    linear-gradient(to bottom, var(--color-slate-50) 0%, #f1f5f9 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-slate-900);
+  margin: 0;
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
+
+/* ============================================================================
+   Cards
+   ============================================================================ */
+
+.card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-slate-200);
+}
+
+.card-hover {
+  transition: all 0.2s ease;
+}
+
+.card-hover:hover {
+  border-color: var(--color-slate-300);
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px);
+}
+
+/* ============================================================================
+   Buttons
+   ============================================================================ */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.35);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: white;
+  color: var(--color-slate-700);
+  border: 1.5px solid var(--color-slate-300);
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-slate-400);
+  background: var(--color-slate-50);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--color-slate-600);
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-ghost:hover {
+  background: var(--color-slate-100);
+  color: var(--color-slate-900);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.btn-link:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+/* ============================================================================
+   Status Badges
+   ============================================================================ */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-created {
+  background: var(--color-slate-100);
+  color: var(--color-slate-600);
+}
+
+.status-running {
+  background: rgba(5, 150, 105, 0.1);
+  color: var(--color-success);
+}
+
+.status-running::before {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.status-paused {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.status-ended {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--color-danger);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ============================================================================
+   Form Inputs
+   ============================================================================ */
+
+.input {
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--color-slate-300);
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: white;
+  color: var(--color-slate-900);
+  width: 100%;
+}
+
+/* When an input has a left icon (e.g. search), ensure text doesn't overlap it */
+.input.pl-11 {
+  padding-left: 2.75rem;
+}
+
+.input::placeholder {
+  color: var(--color-slate-400);
+}
+
+.input:hover {
+  border-color: var(--color-slate-400);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+
+.input-error {
+  border-color: var(--color-danger);
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+select.input {
+  cursor: pointer;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ============================================================================
+   Hero Result Card (dark gradient)
+   ============================================================================ */
+
+.hero-card {
+  background: linear-gradient(135deg, var(--color-slate-900) 0%, var(--color-slate-800) 100%);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl), var(--shadow-glow);
+}
+
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(13, 148, 136, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-card-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-slate-400);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.hero-card-value {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  position: relative;
+  text-shadow: 0 2px 20px rgba(13, 148, 136, 0.3);
+}
+
+.hero-card-unit {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-primary-light);
+  position: relative;
+}
+
+/* ============================================================================
+   Metric Cards
+   ============================================================================ */
+
+.metric-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid var(--color-slate-200);
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
+}
+
+.metric-card:hover {
+  border-color: var(--color-slate-300);
+  box-shadow: var(--shadow-lg);
+}
+
+.metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metric-icon--primary {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.15) 0%, rgba(13, 148, 136, 0.08) 100%);
+  color: var(--color-primary);
+}
+
+.metric-icon--accent {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.08) 100%);
+  color: var(--color-accent);
+}
+
+.metric-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  line-height: 1.2;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-slate-500);
+  margin-top: 0.125rem;
+}
+
+/* ============================================================================
+   Weight Distribution Bar
+   ============================================================================ */
+
+.weight-bar {
+  width: 100%;
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-slate-100);
+}
+
+.weight-bar-segment {
+  height: 100%;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.weight-bar-segment:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.weight-bar-segment:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+.weight-bar-segment:only-child {
+  border-radius: 6px;
+}
+
+/* ============================================================================
+   Pill Tabs
+   ============================================================================ */
+
+.pill-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--color-slate-100);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.pill-tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-slate-500);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pill-tab:hover {
+  color: var(--color-slate-700);
+}
+
+.pill-tab--active {
+  background: white;
+  color: var(--color-slate-900);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================================
+   Filter Pills
+   ============================================================================ */
+
+.filter-pill {
+  padding: 0.625rem 1rem;
+  border: 1.5px solid var(--color-slate-200);
+  background: white;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-slate-600);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-pill:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.filter-pill--active {
+  border-color: var(--color-primary);
+  background: rgba(13, 148, 136, 0.08);
+  color: var(--color-primary);
+}
+
+/* ============================================================================
+   Scrollbar
+   ============================================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-slate-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-slate-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-slate-400);
+}
+
+/* ============================================================================
+   Focus Styles
+   ============================================================================ */
+
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   Animations
+   ============================================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+/* Stagger children animations */
+.stagger-children > * {
+  animation: slideUp 0.4s ease-out backwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* ============================================================================
+   Advanced Settings
+   ============================================================================ */
+
+.advanced-settings {
+  border: 1.5px solid var(--color-slate-200);
+  border-radius: 12px;
+  background: linear-gradient(to bottom, var(--color-slate-50), white);
+  overflow: hidden;
+}
+
+.advanced-settings[open] {
+  border-color: var(--color-slate-300);
+}
+
+.advanced-settings summary {
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: background 0.15s ease;
+}
+
+.advanced-settings summary:hover {
+  background: var(--color-slate-100);
+}
+
+.advanced-settings summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-content {
+  padding: 0.5rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  border-top: 1px solid var(--color-slate-200);
+}
+
+/* ============================================================================
+   Toggle Group
+   ============================================================================ */
+
+.toggle-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-option {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0.875rem;
+  border: 1.5px solid var(--color-slate-300);
+  border-radius: 10px;
+  background: white;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-slate-600);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-option:hover {
+  border-color: var(--color-slate-400);
+  background: var(--color-slate-50);
+}
+
+.toggle-option--active {
+  border-color: var(--color-primary);
+  background: rgba(13, 148, 136, 0.08);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.toggle-option--active:hover {
+  background: rgba(13, 148, 136, 0.12);
+  border-color: var(--color-primary);
+}
+
+/* ============================================================================
+   Spinner
+   ============================================================================ */
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-slate-200);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-slate-200);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ============================================================================
+   App Header (matching sample size calculator)
+   ============================================================================ */
+
+.app-header {
+  background: linear-gradient(to bottom, white, var(--color-slate-50));
+  border-bottom: 1px solid var(--color-slate-200);
+  padding: 2.5rem 1.5rem 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.app-header h1 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  letter-spacing: -0.02em;
+}
+
+.app-subtitle {
+  margin: 0;
+  font-size: 1.0625rem;
+  color: var(--color-slate-600);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ============================================================================
+   Sidebar (matching sample size calculator)
+   ============================================================================ */
+
+.app-sidebar {
+  background: white;
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-slate-200);
+  height: fit-content;
+  position: sticky;
+  top: 2rem;
+}
+
+.sidebar-content {
+  padding: 1.75rem;
+}
+
+.sidebar-content h2 {
+  margin: 0 0 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-slate-900);
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================================
+   Form Groups
+   ============================================================================ */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.label-text {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-slate-800);
+}
+
+.helper-text {
+  font-size: 0.75rem;
+  color: var(--color-slate-500);
+  line-height: 1.4;
+}
+
+.error-text {
+  font-size: 0.75rem;
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+/* ============================================================================
+   Error Banner
+   ============================================================================ */
+
+.error-banner {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.5rem;
+  color: #991b1b;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* ============================================================================
+   Slider
+   ============================================================================ */
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.slider-group input[type='range'] {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-slate-200);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.slider-group input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.3);
+}
+
+.slider-group input[type='range']::-webkit-slider-thumb:hover {
+  background: var(--color-primary-dark);
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(13, 148, 136, 0.4);
+}
+
+.slider-group input[type='range']::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.3);
+}
+
+.slider-value {
+  font-weight: 700;
+  color: var(--color-slate-700);
+  min-width: 3.5rem;
+  text-align: right;
+  font-size: 0.9375rem;
+}
+
+/* ============================================================================
+   Interpretation Panel
+   ============================================================================ */
+
+.interpretation-panel {
+  background: linear-gradient(to bottom, white, var(--color-slate-50));
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-slate-200);
+}
+
+.interpretation-panel h3 {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-slate-800);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.interpretation-panel h3::before {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 1em;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+.interpretation-panel ul {
+  margin: 0;
+  padding-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.interpretation-panel li {
+  font-size: 0.8125rem;
+  color: var(--color-slate-600);
+  line-height: 1.6;
+  position: relative;
+  padding-left: 0.75rem;
+}
+
+.interpretation-panel li::before {
+  content: '';
+  position: absolute;
+  left: -0.5rem;
+  top: 0.6em;
+  width: 4px;
+  height: 4px;
+  background: var(--color-slate-400);
+  border-radius: 50%;
+}
+
+.interpretation-panel strong {
+  color: var(--color-slate-800);
+  font-weight: 600;
+}
+
+/* ============================================================================
+   Help Tooltip
+   ============================================================================ */
+
+.help-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 0.375rem;
+  border-radius: 50%;
+  background: var(--color-slate-200);
+  color: var(--color-slate-500);
+  font-size: 0.625rem;
+  font-weight: 700;
+  cursor: help;
+  transition: all 0.15s ease;
+}
+
+.help-tooltip:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.help-tooltip-content {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 240px;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: var(--color-slate-800);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+}
+
+.help-tooltip-content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--color-slate-800);
+}
+
+.help-tooltip:hover .help-tooltip-content {
+  opacity: 1;
+  visibility: visible;
+}
