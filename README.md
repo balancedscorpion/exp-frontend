@@ -83,9 +83,9 @@ See `env.example` for a starting point (copy to `.env.local`).
 
 This repo includes a workflow that builds and publishes a Docker image to `ghcr.io` using the convention:
 
-- `ghcr.io/<owner>/<repo>/<image>:dev` on pushes to `dev` / `develop`
-- `ghcr.io/<owner>/<repo>/<image>:staging` on pushes to `staging`
-- `ghcr.io/<owner>/<repo>/<image>:release` on pushes to `main` / `master` / `release`
+- `ghcr.io/<owner>/<repo>:dev` on pushes to `dev` / `develop`
+- `ghcr.io/<owner>/<repo>:staging` on pushes to `staging`
+- `ghcr.io/<owner>/<repo>:release` on pushes to `main` / `master` / `release`
 
 The workflow uses the built-in `GITHUB_TOKEN` with `packages: write` permission (no extra secrets required).
 

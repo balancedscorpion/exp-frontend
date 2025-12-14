@@ -11,11 +11,6 @@ on:
       - develop
   workflow_dispatch: {}
 
-env:
-  # Publishes to: ghcr.io/<owner>/<repo>/<image>:<dev|staging|release>
-  # Change this if you want a different image name under the repo namespace.
-  IMAGE_NAME: frontend
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -44,10 +39,9 @@ jobs:
           esac
 
           repo_lc="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
-          image_lc="$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')"
 
           echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
-          echo "image=ghcr.io/${repo_lc}/${image_lc}:${TAG}" >> "${GITHUB_OUTPUT}"
+          echo "image=ghcr.io/${repo_lc}:${TAG}" >> "${GITHUB_OUTPUT}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
