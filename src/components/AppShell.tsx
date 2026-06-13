@@ -6,21 +6,22 @@ export function AppShell() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-gradient-to-b from-white to-slate-50 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <header className="bg-surface border-b border-hairline sticky top-0 z-30">
+        <div className="h-0.5 bg-signal-500" />
+        <div className="max-w-7xl mx-auto px-6 py-3.5">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <NavLink to="/" className="flex items-center gap-3 group">
-              <img 
-                src="/logo.png" 
-                alt="AI Optimiser" 
-                className="w-10 h-10 rounded-xl shadow-md group-hover:shadow-lg transition-shadow object-cover"
+              <img
+                src="/logo.png"
+                alt="AI Optimiser"
+                className="w-10 h-10 rounded-xl shadow-sm group-hover:shadow-md transition-shadow object-cover"
               />
               <div>
-                <h1 className="font-display text-xl font-bold text-slate-900 tracking-tight">
+                <h1 className="font-display text-xl font-bold text-ink tracking-tight leading-none">
                   AI Optimiser
                 </h1>
-                <p className="text-xs text-slate-500 -mt-0.5">Configuration</p>
+                <p className="eyebrow mt-1">Allocation Console</p>
               </div>
             </NavLink>
 
@@ -32,8 +33,8 @@ export function AppShell() {
                 className={({ isActive }) =>
                   `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                     isActive
-                      ? 'bg-teal-50 text-teal-700'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'bg-signal-50 text-signal-700'
+                      : 'text-ink-muted hover:text-ink hover:bg-paper-deep'
                   }`
                 }
               >
@@ -44,8 +45,8 @@ export function AppShell() {
                 className={({ isActive }) =>
                   `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                     isActive
-                      ? 'bg-teal-50 text-teal-700'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'bg-signal-50 text-signal-700'
+                      : 'text-ink-muted hover:text-ink hover:bg-paper-deep'
                   }`
                 }
               >
@@ -61,8 +62,8 @@ export function AppShell() {
                 className={({ isActive }) =>
                   `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                      ? 'bg-ink text-paper'
+                      : 'text-ink-faint hover:text-ink hover:bg-paper-deep'
                   }`
                 }
               >
@@ -71,7 +72,7 @@ export function AppShell() {
               </NavLink>
 
               {IS_MOCK_API && (
-                <span className="px-2 py-1 rounded-full text-[10px] font-bold tracking-wide bg-purple-50 text-purple-700 border border-purple-200">
+                <span className="px-2 py-1 rounded-md text-[10px] font-mono font-semibold tracking-wider bg-signal-50 text-signal-700 border border-signal-200">
                   MOCK API
                 </span>
               )}

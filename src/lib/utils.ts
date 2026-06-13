@@ -19,16 +19,17 @@ export function formatWeight(weight: number): string {
   return `${(weight * 100).toFixed(1)}%`
 }
 
-// Variant colors - teal/amber theme (matching sample size calculator)
+// Categorical variant spectrum — distinct hues that stay legible side-by-side
+// in the allocation bar, and clear of the persimmon action/live signal.
 export const VARIANT_COLORS = [
-  '#0d9488', // teal (primary)
-  '#f59e0b', // amber (accent)
-  '#06b6d4', // cyan
-  '#059669', // emerald
-  '#fbbf24', // yellow
-  '#0f766e', // dark teal
-  '#14b8a6', // light teal
-  '#d97706', // dark amber
+  '#1f6f6b', // teal-green
+  '#3457d5', // cobalt
+  '#e4a11b', // gold
+  '#8e4fc4', // violet
+  '#2e9e5b', // green
+  '#0e8fa8', // cyan-blue
+  '#b23a6e', // magenta-rose
+  '#7a8450', // olive
 ]
 
 export function getVariantColor(index: number): string {

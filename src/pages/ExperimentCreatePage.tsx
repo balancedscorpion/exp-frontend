@@ -10,13 +10,13 @@ const OPTIMISATION_TYPES = [
   {
     value: 'AB_TEST',
     label: 'A/B Test',
-    description: 'Classic randomized experiment',
+    description: 'Fixed weighted split across variants',
     icon: FlaskConical,
   },
   {
     value: 'AI_OPTIMISATION',
     label: 'AI Optimisation',
-    description: 'Automatic traffic optimization',
+    description: 'Traffic shifts toward the winner automatically',
     icon: Sparkles,
   },
 ]
@@ -100,13 +100,35 @@ export function ExperimentCreatePage() {
     }
   }
 
+  // Normalise to proportions that ALWAYS sum to exactly 1.0 at the displayed
+  // precision. We work in integer units (largest-remainder / Hamilton method) so
+  // the rounding leftover is handed to the variants closest to rounding up —
+  // instead of dumping a sub-visible residual onto the last one (which made
+  // equal thirds read as 0.3333 + 0.3333 + 0.3333 = 0.9999).
   function normalizeWeights(vars: VariantData[]): VariantData[] {
-    const sum = vars.reduce((s, v) => s + v.weight, 0)
-    if (sum === 0) return vars.map((v) => ({ ...v, weight: 1 / vars.length }))
-    const scaled = vars.map((v) => ({ ...v, weight: Math.round((v.weight / sum) * 1000000) / 1000000 }))
-    const scaledSum = scaled.reduce((s, v) => s + v.weight, 0)
-    if (scaled.length > 0) scaled[scaled.length - 1].weight += 1 - scaledSum
-    return scaled
+    if (vars.length === 0) return vars
+
+    const WEIGHT_DP = 4 // 0.01% resolution — matches what the inputs/labels show
+    const scale = 10 ** WEIGHT_DP
+
+    const total = vars.reduce((s, v) => s + v.weight, 0)
+    const proportions = total > 0
+      ? vars.map((v) => v.weight / total)
+      : vars.map(() => 1 / vars.length) // nothing to weigh → equal split
+
+    const exact = proportions.map((p) => p * scale)
+    const units = exact.map((e) => Math.floor(e))
+    let remainder = Math.round(scale - units.reduce((s, u) => s + u, 0))
+
+    // Distribute the leftover whole units to the largest fractional remainders.
+    const byFraction = exact
+      .map((e, i) => ({ i, frac: e - Math.floor(e) }))
+      .sort((a, b) => b.frac - a.frac)
+    for (let k = 0; remainder > 0 && byFraction.length > 0; k++, remainder--) {
+      units[byFraction[k % byFraction.length].i] += 1
+    }
+
+    return vars.map((v, i) => ({ ...v, weight: units[i] / scale }))
   }
 
   function equalizeWeights() {
@@ -145,34 +167,35 @@ export function ExperimentCreatePage() {
     <div className="max-w-3xl mx-auto px-6 py-8 animate-fade-in">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Create Experiment</h1>
-        <p className="text-slate-600">Configure your new experiment with variants and weights.</p>
+        <p className="eyebrow mb-2">New Experiment</p>
+        <h1 className="text-3xl font-bold text-ink mb-2">Compose an Optimisation</h1>
+        <p className="text-ink-muted">Define the variants and how traffic splits across them.</p>
       </div>
 
       <form onSubmit={handleSubmit} onChange={updateDebugger}>
         {/* Basics */}
         <Card className="p-6 mb-5">
-          <h2 className="text-lg font-semibold text-slate-900 mb-5">Basics</h2>
+          <h2 className="text-lg font-semibold text-ink mb-5">Basics</h2>
 
           <div className="mb-5">
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-ink-soft mb-2">
               Experiment Name
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Checkout Flow Optimization"
+              placeholder="e.g., Checkout Flow Optimisation"
               className="input"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-3">
-              Optimization Type
+            <label className="block text-sm font-semibold text-ink-soft mb-3">
+              Optimisation Type
             </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {OPTIMISATION_TYPES.map((type) => (
                 <button
                   key={type.value}
@@ -181,15 +204,15 @@ export function ExperimentCreatePage() {
                   className={cn(
                     'p-4 rounded-xl border-2 text-left transition-all',
                     optimisationType === type.value
-                      ? 'border-teal-500 bg-teal-50'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ? 'border-signal-500 bg-signal-50'
+                      : 'border-hairline hover:border-hairline-strong bg-surface'
                   )}
                 >
-                  <type.icon className={cn('w-5 h-5 mb-2', optimisationType === type.value ? 'text-teal-600' : 'text-slate-400')} />
-                  <p className={cn('font-semibold text-sm', optimisationType === type.value ? 'text-teal-700' : 'text-slate-700')}>
+                  <type.icon className={cn('w-5 h-5 mb-2', optimisationType === type.value ? 'text-signal-600' : 'text-ink-faint')} />
+                  <p className={cn('font-semibold text-sm', optimisationType === type.value ? 'text-signal-700' : 'text-ink-soft')}>
                     {type.label}
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">{type.description}</p>
+                  <p className="text-xs text-ink-muted mt-0.5">{type.description}</p>
                 </button>
               ))}
             </div>
@@ -199,25 +222,25 @@ export function ExperimentCreatePage() {
         {/* Variants */}
         <Card className="p-6 mb-5">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-semibold text-slate-900">Variants</h2>
-            <div className={cn('px-3 py-1 rounded-lg text-xs font-mono font-semibold', isWeightValid ? 'bg-teal-50 text-teal-700' : 'bg-red-50 text-red-600')}>
+            <h2 className="text-lg font-semibold text-ink">Variants &amp; Allocation</h2>
+            <div className={cn('px-3 py-1 rounded-md text-xs font-mono font-semibold', isWeightValid ? 'bg-signal-50 text-signal-700' : 'bg-red-50 text-red-600')}>
               Σ = {weightSum.toFixed(4)}
             </div>
           </div>
 
           <div className="mb-5">
-            <WeightDistributionBar variants={variants} height={10} />
+            <WeightDistributionBar variants={variants} height={16} showTicks showLabels />
           </div>
 
           <div className="space-y-3 mb-5">
             {variants.map((variant, index) => (
               <div
                 key={index}
-                className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200"
+                className="flex items-center gap-4 p-4 rounded-xl bg-paper border border-hairline"
                 style={{ borderLeftWidth: 4, borderLeftColor: getVariantColor(index) }}
               >
                 <div
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0 font-mono"
                   style={{ backgroundColor: getVariantColor(index) }}
                 >
                   {String.fromCharCode(65 + index)}
@@ -232,7 +255,7 @@ export function ExperimentCreatePage() {
                       setVariants(updated)
                     }}
                     placeholder="Variant name"
-                    className="w-full bg-transparent border-0 border-b-2 border-transparent hover:border-slate-300 focus:border-teal-500 text-sm font-semibold text-slate-800 outline-none py-1 transition-colors"
+                    className="w-full bg-transparent border-0 border-b-2 border-transparent hover:border-hairline-strong focus:border-signal-500 text-sm font-semibold text-ink-soft outline-none py-1 transition-colors"
                   />
                 </div>
                 <div className="w-24 flex-shrink-0">
@@ -247,15 +270,15 @@ export function ExperimentCreatePage() {
                       updated[index].weight = parseFloat(e.target.value) || 0
                       setVariants(updated)
                     }}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-mono text-right focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                    className="w-full px-3 py-2 bg-surface border border-hairline-strong rounded-lg text-sm font-mono text-right focus:border-signal-500 focus:ring-2 focus:ring-signal-500/20 outline-none"
                   />
-                  <p className="text-xs text-slate-500 text-right mt-1">{(variant.weight * 100).toFixed(1)}%</p>
+                  <p className="text-xs text-ink-muted text-right mt-1 font-mono">{(variant.weight * 100).toFixed(1)}%</p>
                 </div>
                 {variants.length > 2 && (
                   <button
                     type="button"
                     onClick={() => removeVariant(index)}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-ink-faint hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -268,7 +291,7 @@ export function ExperimentCreatePage() {
             <button
               type="button"
               onClick={addVariant}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-slate-300 text-slate-500 hover:text-teal-600 hover:border-teal-400 transition-colors font-semibold text-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-hairline-strong text-ink-muted hover:text-signal-600 hover:border-signal-300 transition-colors font-semibold text-sm"
             >
               <Plus className="w-4 h-4" />
               Add Variant
@@ -276,7 +299,7 @@ export function ExperimentCreatePage() {
             <button
               type="button"
               onClick={equalizeWeights}
-              className="text-sm text-slate-500 hover:text-teal-600 font-semibold transition-colors"
+              className="text-sm text-ink-muted hover:text-signal-600 font-semibold transition-colors"
             >
               Equalize Weights
             </button>
@@ -288,16 +311,16 @@ export function ExperimentCreatePage() {
           <summary>
             <div className="flex items-center justify-between">
               <div>
-                <span className="block font-semibold text-sm text-slate-700">Advanced Settings</span>
-                <span className="block text-xs text-slate-500 mt-0.5">Seed, metadata, and more</span>
+                <span className="block font-semibold text-sm text-ink-soft">Advanced Settings</span>
+                <span className="block text-xs text-ink-muted mt-0.5">Seed, metadata, and more</span>
               </div>
-              <ChevronDown className={cn('w-5 h-5 text-slate-400 transition-transform', advancedOpen && 'rotate-180')} />
+              <ChevronDown className={cn('w-5 h-5 text-ink-faint transition-transform', advancedOpen && 'rotate-180')} />
             </div>
           </summary>
           <div className="advanced-content">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Seed</label>
+                <label className="block text-sm font-semibold text-ink-soft mb-2">Seed</label>
                 <input
                   type="text"
                   value={seed}
@@ -307,7 +330,7 @@ export function ExperimentCreatePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Created By</label>
+                <label className="block text-sm font-semibold text-ink-soft mb-2">Created By</label>
                 <input
                   type="text"
                   value={createdBy}
@@ -318,7 +341,7 @@ export function ExperimentCreatePage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Optimization Settings (JSON)</label>
+              <label className="block text-sm font-semibold text-ink-soft mb-2">Optimisation Settings (JSON)</label>
               <textarea
                 value={optimisationSettings}
                 onChange={(e) => setOptimisationSettings(e.target.value)}
@@ -327,7 +350,7 @@ export function ExperimentCreatePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Metadata (JSON)</label>
+              <label className="block text-sm font-semibold text-ink-soft mb-2">Metadata (JSON)</label>
               <textarea
                 value={metadata}
                 onChange={(e) => setMetadata(e.target.value)}
@@ -340,7 +363,7 @@ export function ExperimentCreatePage() {
 
         {/* Error */}
         {error && (
-          <div className="flex items-center gap-3 px-4 py-3 mb-5 rounded-xl bg-red-50 border border-red-200 text-red-700">
+          <div className="flex items-center gap-3 px-4 py-3 mb-5 rounded-xl bg-signal-50 border border-signal-200 text-signal-800">
             <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <p className="text-sm font-medium">{error}</p>
           </div>

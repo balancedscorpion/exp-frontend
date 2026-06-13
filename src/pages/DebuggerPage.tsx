@@ -17,10 +17,11 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { useDebuggerStore } from '../store/debugger'
-import { Card } from '../components/ui'
+import { Card, WeightDistributionBar } from '../components/ui'
 import { cn } from '../lib/utils'
 import { api, debugApi } from '../api/client'
 import type {
+  Experiment,
   ExperimentListItem,
   RandomiseTestResponse,
   ExplorerTableDescriptor,
@@ -47,11 +48,13 @@ export function DebuggerPage() {
   // Randomise Tester state
   const [experiments, setExperiments] = useState<ExperimentListItem[]>([])
   const [selectedExperiment, setSelectedExperiment] = useState<string>('')
+  const [selectedExpDetail, setSelectedExpDetail] = useState<Experiment | null>(null)
   const [testUserId, setTestUserId] = useState('')
   const [testResult, setTestResult] = useState<RandomiseTestResponse | null>(null)
   const [testHistory, setTestHistory] = useState<TestHistory[]>([])
   const [testLoading, setTestLoading] = useState(false)
   const [testError, setTestError] = useState<string | null>(null)
+  const [runId, setRunId] = useState(0)
 
   // Data Explorer state
   const [explorerTables, setExplorerTables] = useState<ExplorerTableDescriptor[]>([])
@@ -88,6 +91,22 @@ export function DebuggerPage() {
       .catch(console.error)
   }, [])
 
+  // Pull the full experiment (variants + weights) so the tester can render the
+  // allocation bar a user is dropped onto. Uses the existing GET /experiments/:id.
+  useEffect(() => {
+    if (!selectedExperiment) {
+      setSelectedExpDetail(null)
+      setTestResult(null)
+      return
+    }
+    let cancelled = false
+    setTestResult(null)
+    api.get<Experiment>(`/experiments/${selectedExperiment}`)
+      .then((exp) => { if (!cancelled) setSelectedExpDetail(exp) })
+      .catch(() => { if (!cancelled) setSelectedExpDetail(null) })
+    return () => { cancelled = true }
+  }, [selectedExperiment])
+
   async function copyToClipboard(text: string) {
     await navigator.clipboard.writeText(text)
     setCopied(true)
@@ -120,6 +139,7 @@ export function DebuggerPage() {
         experimentId: selectedExperiment,
       })
       setTestResult(result)
+      setRunId((n) => n + 1)
 
       const exp = experiments.find((e) => e.id === selectedExperiment)
       setTestHistory((prev) => [
@@ -222,12 +242,12 @@ export function DebuggerPage() {
     <div className="max-w-7xl mx-auto px-6 py-8 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
-          <Terminal className="w-6 h-6 text-amber-600" />
+        <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center">
+          <Terminal className="w-6 h-6 text-signal-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Debugger</h1>
-          <p className="text-slate-500 text-sm">Monitor API requests, test randomisation, and explore data</p>
+          <p className="eyebrow mb-0.5">Trust, but verify</p>
+          <h1 className="text-2xl font-bold text-ink">Debugger</h1>
         </div>
       </div>
 
@@ -241,7 +261,7 @@ export function DebuggerPage() {
             <Network className="w-4 h-4" />
             Network
             {requests.length > 0 && (
-              <span className="ml-1 px-2 py-0.5 rounded-full bg-slate-200 text-xs font-semibold">
+              <span className="ml-1 px-2 py-0.5 rounded-full bg-paper-deep text-xs font-semibold">
                 {requests.length}
               </span>
             )}
@@ -294,32 +314,32 @@ export function DebuggerPage() {
         <div className="flex gap-6 min-h-[500px]">
           <Card className="w-80 flex-shrink-0 overflow-hidden">
             {requests.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+              <div className="flex flex-col items-center justify-center py-16 text-ink-faint">
                 <Network className="w-10 h-10 mb-3 opacity-50" />
                 <p className="text-sm font-medium">No requests yet</p>
                 <p className="text-xs mt-1">Navigate the app to see API calls</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+              <div className="divide-y divide-hairline max-h-[600px] overflow-y-auto">
                 {(Array.isArray(requests) ? requests : []).map((req) => (
                   <button
                     key={req.id}
                     onClick={() => setSelectedRequest(req.id)}
                     className={cn(
                       'w-full px-4 py-3 text-left transition-colors',
-                      selectedRequest === req.id ? 'bg-teal-50' : 'hover:bg-slate-50'
+                      selectedRequest === req.id ? 'bg-signal-50' : 'hover:bg-paper'
                     )}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span
                         className={cn(
-                          'text-[10px] font-bold px-1.5 py-0.5 rounded',
+                          'text-[10px] font-mono font-bold px-1.5 py-0.5 rounded',
                           req.method === 'GET'
-                            ? 'bg-blue-100 text-blue-600'
+                            ? 'bg-draft-bg text-draft'
                             : req.method === 'POST'
-                            ? 'bg-green-100 text-green-600'
+                            ? 'bg-signal-50 text-signal-700'
                             : req.method === 'PUT' || req.method === 'PATCH'
-                            ? 'bg-amber-100 text-amber-600'
+                            ? 'bg-hold-bg text-hold'
                             : 'bg-red-100 text-red-600'
                         )}
                       >
@@ -331,17 +351,17 @@ export function DebuggerPage() {
                           req.error
                             ? 'bg-red-100 text-red-600'
                             : req.status && req.status >= 200 && req.status < 300
-                            ? 'bg-green-100 text-green-600'
+                            ? 'bg-done-bg text-done'
                             : req.status
-                            ? 'bg-amber-100 text-amber-600'
-                            : 'bg-slate-100 text-slate-500'
+                            ? 'bg-hold-bg text-hold'
+                            : 'bg-paper-deep text-ink-muted'
                         )}
                       >
                         {req.status || '...'}
                       </span>
                     </div>
-                    <p className="text-xs font-mono truncate text-slate-700">{req.url}</p>
-                    <p className="text-[10px] text-slate-400 mt-1">
+                    <p className="text-xs font-mono truncate text-ink-soft">{req.url}</p>
+                    <p className="text-[10px] text-ink-faint mt-1 font-mono">
                       {req.duration ? `${req.duration}ms` : 'pending'} • {req.timestamp.toLocaleTimeString()}
                     </p>
                   </button>
@@ -354,7 +374,7 @@ export function DebuggerPage() {
             {selectedReq ? (
               <div className="space-y-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-slate-900">Request Detail</h3>
+                  <h3 className="font-semibold text-ink">Request Detail</h3>
                   <button onClick={() => copyToClipboard(generateCurl(selectedReq))} className="btn-ghost">
                     {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     Copy as cURL
@@ -363,30 +383,30 @@ export function DebuggerPage() {
 
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <p className="text-xs text-slate-400 mb-1">Method</p>
-                    <p className="font-mono font-semibold text-slate-800">{selectedReq.method}</p>
+                    <p className="eyebrow mb-1">Method</p>
+                    <p className="font-mono font-semibold text-ink-soft">{selectedReq.method}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400 mb-1">Status</p>
-                    <p className="font-mono font-semibold text-slate-800">{selectedReq.status || 'Pending'}</p>
+                    <p className="eyebrow mb-1">Status</p>
+                    <p className="font-mono font-semibold text-ink-soft">{selectedReq.status || 'Pending'}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400 mb-1">Duration</p>
-                    <p className="font-mono font-semibold text-slate-800">
+                    <p className="eyebrow mb-1">Duration</p>
+                    <p className="font-mono font-semibold text-ink-soft">
                       {selectedReq.duration ? `${selectedReq.duration}ms` : '-'}
                     </p>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs text-slate-400 mb-1">URL</p>
-                  <p className="font-mono text-sm break-all text-slate-800">{selectedReq.url}</p>
+                  <p className="eyebrow mb-1">URL</p>
+                  <p className="font-mono text-sm break-all text-ink-soft">{selectedReq.url}</p>
                 </div>
 
                 {selectedReq.requestBody !== undefined && (
                   <div>
-                    <p className="text-xs text-slate-400 mb-2">Request Body</p>
-                    <pre className="text-xs font-mono bg-slate-50 p-4 rounded-xl overflow-auto max-h-40 text-slate-700 border border-slate-100">
+                    <p className="eyebrow mb-2">Request Body</p>
+                    <pre className="text-xs font-mono bg-paper p-4 rounded-xl overflow-auto max-h-40 text-ink-soft border border-hairline">
                       {JSON.stringify(selectedReq.requestBody, null, 2)}
                     </pre>
                   </div>
@@ -394,8 +414,8 @@ export function DebuggerPage() {
 
                 {selectedReq.responseBody !== undefined && (
                   <div>
-                    <p className="text-xs text-slate-400 mb-2">Response Body</p>
-                    <pre className="text-xs font-mono bg-slate-50 p-4 rounded-xl overflow-auto max-h-60 text-slate-700 border border-slate-100">
+                    <p className="eyebrow mb-2">Response Body</p>
+                    <pre className="text-xs font-mono bg-paper p-4 rounded-xl overflow-auto max-h-60 text-ink-soft border border-hairline">
                       {JSON.stringify(selectedReq.responseBody, null, 2)}
                     </pre>
                   </div>
@@ -408,7 +428,7 @@ export function DebuggerPage() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-slate-400">
+              <div className="flex items-center justify-center h-full text-ink-faint">
                 <p className="text-sm">Select a request to view details</p>
               </div>
             )}
@@ -421,18 +441,18 @@ export function DebuggerPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Test Form */}
           <Card className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <Shuffle className="w-5 h-5 text-teal-600" />
+            <h3 className="font-semibold text-ink mb-4 flex items-center gap-2">
+              <Shuffle className="w-5 h-5 text-signal-600" />
               Test Randomisation
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-700 block mb-2">Experiment</label>
+                <label className="text-sm font-medium text-ink-soft block mb-2">Experiment</label>
                 <select
                   value={selectedExperiment}
                   onChange={(e) => setSelectedExperiment(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  className="input"
                 >
                   <option value="">Select an experiment...</option>
                   {(Array.isArray(experiments) ? experiments : []).map((exp) => (
@@ -444,20 +464,20 @@ export function DebuggerPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700 block mb-2">User ID</label>
+                <label className="text-sm font-medium text-ink-soft block mb-2">User ID</label>
                 <input
                   type="text"
                   value={testUserId}
                   onChange={(e) => setTestUserId(e.target.value)}
                   placeholder="Enter a user ID to test..."
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  className="input"
                 />
               </div>
 
               <button
                 onClick={runRandomiseTest}
                 disabled={testLoading || !selectedExperiment || !testUserId.trim()}
-                className="btn-primary w-full flex items-center justify-center gap-2"
+                className="btn-primary w-full"
               >
                 {testLoading ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -467,6 +487,28 @@ export function DebuggerPage() {
                 Run Test
               </button>
 
+              {/* Allocation bar — where this user lands */}
+              {selectedExpDetail && (
+                <div className="pt-2">
+                  <p className="eyebrow mb-2">Allocation</p>
+                  <WeightDistributionBar
+                    key={runId}
+                    variants={selectedExpDetail.variants.variants}
+                    height={22}
+                    showTicks
+                    showLabels
+                    marker={testResult ? { variantIndex: testResult.variant } : null}
+                    animateMarker
+                  />
+                  {testResult && (
+                    <p className="text-xs text-ink-muted mt-2 font-mono">
+                      user <span className="text-ink-soft">{testResult.userId}</span> → segment{' '}
+                      <span className="text-signal-700 font-semibold">{testResult.variant}</span>
+                    </p>
+                  )}
+                </div>
+              )}
+
               {testError && (
                 <div className="text-sm text-red-600 bg-red-50 p-4 rounded-xl border border-red-100">
                   {testError}
@@ -474,24 +516,24 @@ export function DebuggerPage() {
               )}
 
               {testResult && (
-                <div className="bg-teal-50 border border-teal-100 rounded-xl p-4">
-                  <h4 className="font-semibold text-teal-800 mb-3">Result</h4>
+                <div className="bg-paper border border-hairline rounded-xl p-4">
+                  <h4 className="eyebrow mb-3">Result</h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-teal-600">Variant Index:</span>
-                      <span className="ml-2 font-mono font-bold text-teal-900">{testResult.variant}</span>
+                      <span className="text-ink-muted">Variant Index:</span>
+                      <span className="ml-2 font-mono font-bold text-signal-700">{testResult.variant}</span>
                     </div>
                     <div>
-                      <span className="text-teal-600">Num Variants:</span>
-                      <span className="ml-2 font-mono text-teal-900">{testResult.numVariants}</span>
+                      <span className="text-ink-muted">Num Variants:</span>
+                      <span className="ml-2 font-mono text-ink-soft">{testResult.numVariants}</span>
                     </div>
                     <div className="col-span-2">
-                      <span className="text-teal-600">Variant ID:</span>
-                      <span className="ml-2 font-mono text-xs text-teal-900 break-all">{testResult.variantId}</span>
+                      <span className="text-ink-muted">Variant ID:</span>
+                      <span className="ml-2 font-mono text-xs text-ink-soft break-all">{testResult.variantId}</span>
                     </div>
                     <div className="col-span-2">
-                      <span className="text-teal-600">Seed:</span>
-                      <span className="ml-2 font-mono text-xs text-teal-900 break-all">{testResult.seed}</span>
+                      <span className="text-ink-muted">Seed:</span>
+                      <span className="ml-2 font-mono text-xs text-ink-soft break-all">{testResult.seed}</span>
                     </div>
                   </div>
                 </div>
@@ -501,9 +543,9 @@ export function DebuggerPage() {
 
           {/* Test History */}
           <Card className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">Test History</h3>
+            <h3 className="font-semibold text-ink mb-4">Test History</h3>
             {testHistory.length === 0 ? (
-              <div className="text-slate-400 text-sm py-8 text-center">
+              <div className="text-ink-faint text-sm py-8 text-center">
                 No tests run yet. Run a test to see history.
               </div>
             ) : (
@@ -511,20 +553,20 @@ export function DebuggerPage() {
                 {(Array.isArray(testHistory) ? testHistory : []).map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-sm"
+                    className="p-3 rounded-xl bg-paper border border-hairline text-sm"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-slate-800">
+                      <span className="font-medium text-ink-soft">
                         {item.experiment_name || item.experimentId.slice(0, 8)}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-ink-faint font-mono">
                         {item.timestamp.toLocaleTimeString()}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-slate-600">
+                    <div className="flex items-center gap-4 text-xs text-ink-muted">
                       <span>User: <span className="font-mono">{item.userId}</span></span>
                       <span>→</span>
-                      <span className="font-semibold text-teal-700">
+                      <span className="font-semibold text-signal-700 font-mono">
                         Variant {item.result.variant}
                       </span>
                     </div>
@@ -543,20 +585,20 @@ export function DebuggerPage() {
           {selectedTableId === 'randomisation_logs' && stats && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="p-4">
-                <p className="text-xs text-slate-500 mb-1">Total Allocations</p>
-                <p className="text-2xl font-bold text-slate-900">{(stats.totalAllocations ?? 0).toLocaleString()}</p>
+                <p className="eyebrow mb-1">Total Allocations</p>
+                <p className="text-2xl font-bold text-ink font-display">{(stats.totalAllocations ?? 0).toLocaleString()}</p>
               </Card>
               <Card className="p-4">
-                <p className="text-xs text-slate-500 mb-1">Unique Users</p>
-                <p className="text-2xl font-bold text-slate-900">{(stats.uniqueUsers ?? 0).toLocaleString()}</p>
+                <p className="eyebrow mb-1">Unique Users</p>
+                <p className="text-2xl font-bold text-ink font-display">{(stats.uniqueUsers ?? 0).toLocaleString()}</p>
               </Card>
               <Card className="p-4">
-                <p className="text-xs text-slate-500 mb-1">Experiments</p>
-                <p className="text-2xl font-bold text-slate-900">{stats.uniqueExperiments ?? 0}</p>
+                <p className="eyebrow mb-1">Experiments</p>
+                <p className="text-2xl font-bold text-ink font-display">{stats.uniqueExperiments ?? 0}</p>
               </Card>
               <Card className="p-4">
-                <p className="text-xs text-slate-500 mb-1">Variants</p>
-                <p className="text-2xl font-bold text-slate-900">{(stats.variantDistribution ?? []).length}</p>
+                <p className="eyebrow mb-1">Variants</p>
+                <p className="text-2xl font-bold text-ink font-display">{(stats.variantDistribution ?? []).length}</p>
               </Card>
             </div>
           )}
@@ -565,14 +607,14 @@ export function DebuggerPage() {
           <Card className="p-4">
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-700">Table:</span>
+                <span className="text-sm font-medium text-ink-soft">Table:</span>
                 <select
                   value={selectedTableId}
                   onChange={(e) => {
                     setSelectedTableId(e.target.value)
                     setLogsPage(0)
                   }}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                  className="px-3 py-1.5 rounded-lg border border-hairline-strong bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-signal-500/20"
                 >
                   {(Array.isArray(explorerTables) ? explorerTables : []).map((t) => (
                     <option key={t.id} value={t.id}>
@@ -583,8 +625,8 @@ export function DebuggerPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Search className="w-4 h-4 text-slate-400" />
-                <span className="text-sm font-medium text-slate-700">Filters:</span>
+                <Search className="w-4 h-4 text-ink-faint" />
+                <span className="text-sm font-medium text-ink-soft">Filters:</span>
               </div>
 
               {selectedTableId === 'randomisation_logs' ? (
@@ -594,7 +636,7 @@ export function DebuggerPage() {
                     setFilterExperiment(e.target.value)
                     setLogsPage(0)
                   }}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                  className="px-3 py-1.5 rounded-lg border border-hairline-strong bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-signal-500/20"
                 >
                   <option value="">All Experiments</option>
                   {(Array.isArray(experiments) ? experiments : []).map((exp) => (
@@ -612,7 +654,7 @@ export function DebuggerPage() {
                     setLogsPage(0)
                   }}
                   placeholder="Filter by metric ID..."
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 w-48"
+                  className="px-3 py-1.5 rounded-lg border border-hairline-strong bg-surface text-sm placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-signal-500/20 w-48"
                 />
               ) : null}
 
@@ -628,7 +670,7 @@ export function DebuggerPage() {
                       setLogsPage(0)
                     }}
                     placeholder="Filter by user ID..."
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 w-48"
+                    className="px-3 py-1.5 rounded-lg border border-hairline-strong bg-surface text-sm placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-signal-500/20 w-48"
                   />
                 ) : null
               })()}
@@ -655,17 +697,17 @@ export function DebuggerPage() {
               <div className="p-6 text-center text-red-600">
                 <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p>{logsError}</p>
-                <p className="text-xs text-slate-500 mt-2">
+                <p className="text-xs text-ink-muted mt-2">
                   Make sure DEBUG_MODE=true is set on the server.
                 </p>
               </div>
             ) : logsLoading ? (
-              <div className="p-12 text-center text-slate-400">
+              <div className="p-12 text-center text-ink-faint">
                 <RefreshCw className="w-8 h-8 mx-auto mb-2 animate-spin" />
                 <p>Loading table...</p>
               </div>
             ) : !tableData || !Array.isArray(tableData.rows) || tableData.rows.length === 0 ? (
-              <div className="p-12 text-center text-slate-400">
+              <div className="p-12 text-center text-ink-faint">
                 <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p>No rows found</p>
                 <p className="text-xs mt-1">Try changing filters or selecting another table</p>
@@ -675,24 +717,24 @@ export function DebuggerPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-slate-50 border-b border-slate-100">
+                        <tr className="bg-paper border-b border-hairline">
                           {(Array.isArray(tableData.columns) ? tableData.columns : []).map((col) => (
-                            <th key={col} className="text-left px-4 py-3 font-medium text-slate-600">
+                            <th key={col} className="text-left px-4 py-3 font-mono text-xs font-medium text-ink-muted uppercase tracking-wider">
                               {col}
                             </th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-hairline">
                         {(Array.isArray(tableData.rows) ? tableData.rows : []).map((row, idx) => (
-                          <tr key={(row?.id as string) ?? idx} className="hover:bg-slate-50">
+                          <tr key={(row?.id as string) ?? idx} className="hover:bg-paper">
                             {(Array.isArray(tableData.columns) ? tableData.columns : []).map((col) => {
                               const val = row?.[col]
                               const isTimestamp = col === 'timestamp' || col.endsWith('_at')
                               const rendered =
                                 isTimestamp && typeof val === 'string' ? new Date(val).toLocaleString() : String(val ?? '-')
                               return (
-                                <td key={col} className="px-4 py-3 font-mono text-xs text-slate-700 max-w-64 truncate">
+                                <td key={col} className="px-4 py-3 font-mono text-xs text-ink-soft max-w-64 truncate">
                                   {rendered}
                                 </td>
                               )
@@ -704,8 +746,8 @@ export function DebuggerPage() {
                   </div>
 
                   {/* Pagination */}
-                  <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 bg-slate-50">
-                    <span className="text-xs text-slate-500">
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-hairline bg-paper">
+                    <span className="text-xs text-ink-muted font-mono">
                       Showing {logsPage * logsLimit + 1}-{Math.min((logsPage + 1) * logsLimit, logsTotal)} of{' '}
                       {logsTotal.toLocaleString()}
                     </span>
@@ -717,7 +759,7 @@ export function DebuggerPage() {
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
-                      <span className="text-sm text-slate-600">
+                      <span className="text-sm text-ink-muted font-mono">
                         Page {logsPage + 1} of {Math.ceil(logsTotal / logsLimit) || 1}
                       </span>
                       <button
@@ -739,7 +781,7 @@ export function DebuggerPage() {
       {activeTab === 'json' && (
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-slate-900">Current Form/Experiment JSON</h3>
+            <h3 className="font-semibold text-ink">Current Form/Experiment JSON</h3>
             {currentJson !== null && (
               <button onClick={() => copyToClipboard(JSON.stringify(currentJson, null, 2))} className="btn-ghost">
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -748,11 +790,11 @@ export function DebuggerPage() {
             )}
           </div>
           {currentJson !== null ? (
-            <pre className="text-xs font-mono bg-slate-50 p-6 rounded-xl overflow-auto max-h-[500px] text-slate-700 border border-slate-100">
+            <pre className="text-xs font-mono bg-paper p-6 rounded-xl overflow-auto max-h-[500px] text-ink-soft border border-hairline">
               {JSON.stringify(currentJson, null, 2)}
             </pre>
           ) : (
-            <div className="text-slate-400 text-sm py-16 text-center">
+            <div className="text-ink-faint text-sm py-16 text-center">
               No data available. Create or view an experiment to see its JSON.
             </div>
           )}
@@ -762,7 +804,7 @@ export function DebuggerPage() {
       {/* Validation Tab */}
       {activeTab === 'validation' && (
         <Card className="p-6">
-          <h3 className="font-semibold text-slate-900 mb-4">Validation Status</h3>
+          <h3 className="font-semibold text-ink mb-4">Validation Status</h3>
           {(Array.isArray(validationErrors) ? validationErrors : []).length > 0 ? (
             <div className="space-y-3">
               {(Array.isArray(validationErrors) ? validationErrors : []).map((error, i) => (
@@ -776,7 +818,7 @@ export function DebuggerPage() {
               ))}
             </div>
           ) : (
-            <div className="flex items-center gap-3 text-sm text-teal-700 bg-teal-50 p-4 rounded-xl border border-teal-100">
+            <div className="flex items-center gap-3 text-sm text-signal-700 bg-signal-50 p-4 rounded-xl border border-signal-200">
               <Check className="w-5 h-5" />
               All validations passing
             </div>

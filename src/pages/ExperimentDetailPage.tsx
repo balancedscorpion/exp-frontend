@@ -89,7 +89,7 @@ export function ExperimentDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-10 h-10 border-3 border-teal-500 border-t-transparent rounded-full animate-spin" />
+        <div className="spinner" />
       </div>
     )
   }
@@ -97,7 +97,7 @@ export function ExperimentDetailPage() {
   if (!experiment) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-12 text-center">
-        <p className="text-slate-500">Experiment not found</p>
+        <p className="text-ink-muted">Experiment not found</p>
       </div>
     )
   }
@@ -113,7 +113,7 @@ export function ExperimentDetailPage() {
       {/* Back Link */}
       <Link
         to="/experiments"
-        className="inline-flex items-center gap-2 text-slate-500 hover:text-teal-600 text-sm font-medium mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-ink-muted hover:text-signal-600 text-sm font-medium mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Experiments
@@ -123,10 +123,10 @@ export function ExperimentDetailPage() {
       <div className="hero-card mb-8">
         <div className="relative flex flex-col items-center">
           <StatusBadge status={experiment.status} size="lg" />
-          <h1 className="hero-card-value mt-4 text-3xl md:text-4xl">{experiment.name}</h1>
-          
+          <h1 className="hero-card-value mt-4">{experiment.name}</h1>
+
           {/* Quick Stats */}
-          <div className="flex items-center gap-6 mt-4 text-slate-400 text-sm">
+          <div className="flex items-center gap-6 mt-3 text-white/55 text-sm font-mono">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4" />
               <span>v{experiment.version}</span>
@@ -137,6 +137,11 @@ export function ExperimentDetailPage() {
             </div>
           </div>
 
+          {/* Live allocation readout */}
+          <div className="w-full max-w-xl mt-6">
+            <WeightDistributionBar variants={variants} height={16} showTicks showLabels />
+          </div>
+
           {/* Status Actions */}
           {allowedTransitions.length > 0 && (
             <div className="flex gap-3 mt-6">
@@ -144,17 +149,17 @@ export function ExperimentDetailPage() {
                 <button
                   onClick={() => changeStatus('RUNNING')}
                   disabled={changingStatus}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-signal-500 hover:bg-signal-600 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
                 >
                   <Play className="w-4 h-4" />
-                  Start
+                  {experiment.status === 'PAUSED' ? 'Resume' : 'Start'}
                 </button>
               )}
               {allowedTransitions.includes('PAUSED') && (
                 <button
                   onClick={() => changeStatus('PAUSED')}
                   disabled={changingStatus}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
                 >
                   <Pause className="w-4 h-4" />
                   Pause
@@ -164,7 +169,7 @@ export function ExperimentDetailPage() {
                 <button
                   onClick={() => changeStatus('ENDED')}
                   disabled={changingStatus}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 border border-white/25 hover:border-white/50 hover:bg-white/5 disabled:opacity-50 text-white/80 rounded-lg text-sm font-semibold transition-colors"
                 >
                   <StopCircle className="w-4 h-4" />
                   End
@@ -194,51 +199,51 @@ export function ExperimentDetailPage() {
       {activeTab === 'overview' && (
         <div className="grid md:grid-cols-2 gap-5 stagger-children">
           <Card className="p-5">
-            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Details</h3>
+            <h3 className="eyebrow mb-4">Details</h3>
             <dl className="space-y-4">
               <div>
-                <dt className="text-xs text-slate-400 mb-1">ID</dt>
-                <dd className="font-mono text-sm text-slate-800 flex items-center gap-2">
+                <dt className="text-xs text-ink-faint mb-1">ID</dt>
+                <dd className="font-mono text-sm text-ink-soft flex items-center gap-2">
                   {experiment.id}
-                  <button onClick={() => copyToClipboard(experiment.id)} className="text-slate-400 hover:text-teal-600 transition-colors">
+                  <button onClick={() => copyToClipboard(experiment.id)} className="text-ink-faint hover:text-signal-600 transition-colors">
                     {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-400 mb-1">Seed</dt>
-                <dd className="font-mono text-sm text-slate-800">{experiment.seed}</dd>
+                <dt className="text-xs text-ink-faint mb-1">Seed</dt>
+                <dd className="font-mono text-sm text-ink-soft">{experiment.seed}</dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-400 mb-1">Optimization Type</dt>
-                <dd className="text-sm text-slate-800">{experiment.optimisationType.replace(/_/g, ' ')}</dd>
+                <dt className="text-xs text-ink-faint mb-1">Optimisation Type</dt>
+                <dd className="text-sm text-ink-soft">{experiment.optimisationType.replace(/_/g, ' ')}</dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-400 mb-1">Created</dt>
-                <dd className="text-sm text-slate-800">{formatDate(experiment.createdAt)}</dd>
+                <dt className="text-xs text-ink-faint mb-1">Created</dt>
+                <dd className="text-sm text-ink-soft">{formatDate(experiment.createdAt)}</dd>
               </div>
               {experiment.createdBy && (
                 <div>
-                  <dt className="text-xs text-slate-400 mb-1">Created By</dt>
-                  <dd className="text-sm text-slate-800">{experiment.createdBy}</dd>
+                  <dt className="text-xs text-ink-faint mb-1">Created By</dt>
+                  <dd className="text-sm text-ink-soft">{experiment.createdBy}</dd>
                 </div>
               )}
             </dl>
           </Card>
 
           <Card className="p-5">
-            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Variants</h3>
+            <h3 className="eyebrow mb-4">Variants</h3>
             <div className="mb-4">
-              <WeightDistributionBar variants={variants} height={10} />
+              <WeightDistributionBar variants={variants} height={12} showTicks />
             </div>
             <div className="space-y-2">
               {variants.map((variant, index) => (
-                <div key={variant.id} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
+                <div key={variant.id} className="flex items-center gap-3 p-3 rounded-lg bg-paper">
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: getVariantColor(index) }} />
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-slate-800 truncate">{variant.name}</p>
+                    <p className="font-semibold text-sm text-ink-soft truncate">{variant.name}</p>
                   </div>
-                  <span className="text-sm font-mono text-slate-600">{(variant.weight * 100).toFixed(1)}%</span>
+                  <span className="text-sm font-mono text-ink-muted">{(variant.weight * 100).toFixed(1)}%</span>
                 </div>
               ))}
             </div>
@@ -249,14 +254,14 @@ export function ExperimentDetailPage() {
       {activeTab === 'weights' && (
         <Card className="p-6 max-w-2xl animate-slide-up">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="text-lg font-semibold text-slate-900">Adjust Weights</h3>
-            <div className={cn('px-3 py-1 rounded-lg text-xs font-mono font-semibold', weightsValid ? 'bg-teal-50 text-teal-700' : 'bg-red-50 text-red-600')}>
+            <h3 className="text-lg font-semibold text-ink">Adjust Weights</h3>
+            <div className={cn('px-3 py-1 rounded-md text-xs font-mono font-semibold', weightsValid ? 'bg-signal-50 text-signal-700' : 'bg-red-50 text-red-600')}>
               Sum: {weightSum.toFixed(6)}
             </div>
           </div>
 
           <div className="mb-6">
-            <WeightDistributionBar variants={variants.map((v, i) => ({ ...v, weight: weights[i] }))} height={12} />
+            <WeightDistributionBar variants={variants.map((v, i) => ({ ...v, weight: weights[i] }))} height={16} showTicks showLabels />
           </div>
 
           <div className="space-y-5 mb-6">
@@ -265,10 +270,10 @@ export function ExperimentDetailPage() {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getVariantColor(index) }} />
-                    <span className="font-semibold text-slate-800">{variant.name}</span>
+                    <span className="font-semibold text-ink-soft">{variant.name}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-slate-500 w-16 text-right">{(weights[index] * 100).toFixed(1)}%</span>
+                    <span className="text-sm text-ink-muted w-16 text-right font-mono">{(weights[index] * 100).toFixed(1)}%</span>
                     <input
                       type="number"
                       min="0"
@@ -281,7 +286,7 @@ export function ExperimentDetailPage() {
                         setWeights(newWeights)
                       }}
                       disabled={experiment.status === 'ENDED'}
-                      className="w-24 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-mono text-right focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none disabled:opacity-50"
+                      className="w-24 px-3 py-2 bg-surface border border-hairline-strong rounded-lg text-sm font-mono text-right focus:border-signal-500 focus:ring-2 focus:ring-signal-500/20 outline-none disabled:opacity-50"
                     />
                   </div>
                 </div>
@@ -297,7 +302,7 @@ export function ExperimentDetailPage() {
                     setWeights(newWeights)
                   }}
                   disabled={experiment.status === 'ENDED'}
-                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer disabled:opacity-50"
+                  className="w-full h-2 bg-paper-deep rounded-full appearance-none cursor-pointer disabled:opacity-50"
                   style={{ accentColor: getVariantColor(index) }}
                 />
               </div>
@@ -323,12 +328,12 @@ export function ExperimentDetailPage() {
             <Card key={version.version} className="p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-100 to-teal-50 flex items-center justify-center">
-                    <span className="text-sm font-bold text-teal-700">v{version.version}</span>
+                  <div className="w-10 h-10 rounded-xl bg-signal-50 flex items-center justify-center">
+                    <span className="text-sm font-bold text-signal-700 font-mono">v{version.version}</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-800">Version {version.version}</p>
-                    <p className="text-xs text-slate-500">{formatDate(version.createdAt)}</p>
+                    <p className="font-semibold text-ink-soft">Version {version.version}</p>
+                    <p className="text-xs text-ink-muted font-mono">{formatDate(version.createdAt)}</p>
                   </div>
                 </div>
                 <button
@@ -339,7 +344,7 @@ export function ExperimentDetailPage() {
                   Copy JSON
                 </button>
               </div>
-              <pre className="text-xs font-mono bg-slate-50 p-4 rounded-xl overflow-auto max-h-48 text-slate-700 border border-slate-100">
+              <pre className="text-xs font-mono bg-paper p-4 rounded-xl overflow-auto max-h-48 text-ink-soft border border-hairline">
                 {JSON.stringify(version.data, null, 2)}
               </pre>
             </Card>
